@@ -30,21 +30,4 @@ This project, part of the Computer Engineering curriculum at Cairo University, f
 - Input: `processes.txt` (format defined in the project document).
 - Output: `scheduler.log` and `scheduler.perf` files, logging process details and performance metrics.
 
-## Guidelines
 
-- Read and understand the project documentation thoroughly.
-- Implement robust error handling and resource management.
-- Ensure code modularity and follow naming conventions.
-
-## Grading Criteria
-
-- Correctness & understanding: 50%
-- Code style & modularity: 20%
-- Design complexity & data structures: 20%
-- Teamwork: 10%
-
-## Deliverables
-
-- Source code files.
-- Test cases.
-- Project report detailing algorithms, data structures, assumptions, workload distribution, and task timing.
