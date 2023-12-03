@@ -112,7 +112,6 @@ typedef struct scheduling_algo{
 
 
 int selected_algo;
-int SJFflag = 0;
 int RRquanta = 2;
 process *curentProcess=NULL;
 scheduling_algo algo;
