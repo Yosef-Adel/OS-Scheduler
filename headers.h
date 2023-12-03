@@ -65,3 +65,54 @@ void destroyClk(bool terminateAll)
         killpg(getpgrp(), SIGINT);
     }
 }
+
+
+
+typedef struct
+{
+    //these are vars from the process file 
+    int id;
+    int arrival;
+    int runtime;
+    int priority;
+//======================
+    // these vars will help you in further calculations 
+    int pid;
+    int remainingtime;
+    int waitingtime;
+    int StartedBefore; // 1 means it was started before, 0 means it has never been started before
+    int status;
+    /*
+    possible status values:
+    1 ----> started
+    2 ----> resumed
+    3 ----> stopped
+    4 ----> finished
+    */
+   
+    // here you can add any var you think will be usefull 
+} process;
+
+typedef struct
+{
+    int mtype; // 1 for messages to the scheduler
+    process proc; // will use this msgbuff for sending process from the process generator to the scheduler
+} msgbuff;
+
+typedef struct scheduling_algo{
+    void *type;                  //data structure that implement a certain secheduling algo 
+    bool (*addProcess)(void *type, process *proc);  
+    bool (*preempt)(void *type); //if need change currant process
+    process *(*getNextProcess)(void *type);  // get next process to run
+    bool (*removeProcess)(void *type, process *proc);//remove process
+    bool (*free)(void *type);//
+   
+
+}scheduling_algo; // this work as interface for scheduling, we will implement it's functuions for each algorithm
+
+
+int selected_algo;
+int SJFflag = 0;
+int RRquanta = 2;
+process *curentProcess=NULL;
+scheduling_algo algo;
