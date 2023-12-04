@@ -3,7 +3,7 @@
 
 typedef struct priority_queue
 {
-    // TODO: add see if you can intialize the schedulingAlgorithm here
+    
     int size;
     int capacity;
     process **processes;
@@ -71,11 +71,11 @@ bool SRTN_compare(process *p1, process *p2){
     return false;
 }
 
-bool compare(process *p1, process *p2 , int schedulingAlgorithm){
+bool compare(process *p1, process *p2 ){
 
-    if( schedulingAlgorithm ==1){
+    if( selected_algo ==1){
         return HPF_compare(p1,p2);
-    }else if(schedulingAlgorithm ==2){
+    }else if(selected_algo ==2){
         return SRTN_compare(p1,p2);
     }
 
@@ -112,16 +112,16 @@ process *getpeek(priority_queue *q){
     return q->processes[0];
 }
 
-void reheapDown(priority_queue *all_process, int i, int schedulingAlgorithm){
+void reheapDown(priority_queue *all_process, int i){
     int *size = &all_process->size;
-    bool left_ok = left(i) < *size && compare(all_process->processes[left(i)], all_process->processes[i], schedulingAlgorithm);
-    bool right_ok = right(i) < *size && compare(all_process->processes[right(i)], all_process->processes[i], schedulingAlgorithm);
+    bool left_ok = left(i) < *size && compare(all_process->processes[left(i)], all_process->processes[i]);
+    bool right_ok = right(i) < *size && compare(all_process->processes[right(i)], all_process->processes[i]);
 
     while (i < *size && (left_ok || right_ok))
     {
         if (left_ok && right_ok)
         {
-            if (compare(all_process->processes[left(i)], all_process->processes[right(i)], schedulingAlgorithm))
+            if (compare(all_process->processes[left(i)], all_process->processes[right(i)]))
             {
                 swap(&all_process->processes[i], &all_process->processes[left(i)]);
                 i = left(i);
@@ -142,23 +142,23 @@ void reheapDown(priority_queue *all_process, int i, int schedulingAlgorithm){
             swap(&all_process->processes[i], &all_process->processes[right(i)]);
             i = right(i);
         }
-        left_ok = left(i) < *size && compare(all_process->processes[left(i)], all_process->processes[i], schedulingAlgorithm);
-        right_ok = right(i) < *size && compare(all_process->processes[right(i)], all_process->processes[i], schedulingAlgorithm);
+        left_ok = left(i) < *size && compare(all_process->processes[left(i)], all_process->processes[i]);
+        right_ok = right(i) < *size && compare(all_process->processes[right(i)], all_process->processes[i]);
     }
    
     
 }
 
-void reheapUp(priority_queue *all_process, int i, int schedulingAlgorithm){
+void reheapUp(priority_queue *all_process, int i){
     int *size = &all_process->size;
-    while (i > 0 && compare(all_process->processes[i], all_process->processes[parent(i)], schedulingAlgorithm))
+    while (i > 0 && compare(all_process->processes[i], all_process->processes[parent(i)]))
     {
         swap(&all_process->processes[i], &all_process->processes[parent(i)]);
         i = parent(i);
     }
 }
 
-process *dequeue(priority_queue *all_process, int schedulingAlgorithm){
+process *dequeue(priority_queue *all_process){
     if(!all_process || all_process->size == 0)
         return NULL;
     
@@ -166,11 +166,11 @@ process *dequeue(priority_queue *all_process, int schedulingAlgorithm){
     process *p = all_process->processes[0];
     all_process->processes[0] = all_process->processes[all_process->size - 1];
     all_process->size--;
-    reheapDown(all_process, 0, schedulingAlgorithm);
+    reheapDown(all_process, 0);
     return p;
 }
 
-bool enqueue(priority_queue *all_process, process *p, int schedulingAlgorithm){
+bool enqueue(priority_queue *all_process, process *p){
     if(!all_process || !p)
         return 0;
     if(all_process->size == all_process->capacity){
@@ -178,11 +178,11 @@ bool enqueue(priority_queue *all_process, process *p, int schedulingAlgorithm){
     }
     all_process->processes[all_process->size] = p;
     all_process->size++;
-    reheapUp(all_process, all_process->size - 1, schedulingAlgorithm);
+    reheapUp(all_process, all_process->size - 1);
     return 1;
 }
 
-bool removeProcess(priority_queue *all_process, process *p, int schedulingAlgorithm){
+bool removeProcess(priority_queue *all_process, process *p){
     if(!all_process || !p)
         return 0;
 
@@ -192,7 +192,7 @@ bool removeProcess(priority_queue *all_process, process *p, int schedulingAlgori
         if(all_process->processes[i] == p){
             swap(&all_process->processes[i], &all_process->processes[all_process->size - 1]);
             all_process->size--;
-            reheapDown(all_process, i, schedulingAlgorithm);
+            reheapDown(all_process, i);
             
             return 1;
         }
