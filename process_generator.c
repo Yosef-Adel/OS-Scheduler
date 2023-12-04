@@ -1,13 +1,62 @@
 #include "headers.h"
 
-#define MAX_PROCESSES 100
+
 int clk_pid;
 int scheduler_pid;
 int stat_loc;
 
 void clearResources(int);
 
+void forkClkAndScheduler(){
+    clk_pid = fork();
+    if(clk_pid < 0){
+        printf("Error while forking clk \n");
+        fflush(stdout);
+        exit(1);
+    }
 
+    if(clk_pid == 0){
+        execl("clk.out","clk.out",(char *)NULL);
+    }else{
+        scheduler_pid = fork();
+        if(scheduler_pid < 0){
+            printf("Error while forking scheduler \n");
+            fflush(stdout);
+            exit(1);
+        }
+        if(scheduler_pid == 0){
+            /*
+            char selectedAlgorithmChar[5];
+            sprintf(selectedAlgorithmChar, "%d", selected_algo);
+            execl("scheduler.out","scheduler.out",selectedAlgorithmChar,(char *)NULL);
+            */
+            // TODO: pass the selected algorithm and its parameters to the scheduler
+            //execl("scheduler.out","scheduler.out",(char *)NULL);
+            char selectedAlgorithmChar[5];
+            sprintf(selectedAlgorithmChar, "%d", selected_algo);
+            execl("scheduler.out","scheduler.out",selectedAlgorithmChar,(char *)NULL);
+
+        }
+    }
+}
+
+
+void getAlgoFromUser(){
+    printf("Please enter the desired scheduling algorithm:\n");
+    printf("1. HPF\n2. SRTN\n3. RR\n");
+    fflush(stdout);
+    do {
+        scanf("%d", &selected_algo);
+        if (selected_algo < 1 || selected_algo > 3)
+            printf("Invalid input. Please enter a number between 1 and 3.\n");
+    } while (selected_algo < 1 || selected_algo > 3);
+
+    if (selected_algo == 3){
+        printf("Please enter the desired time quanta:\n");
+        fflush(stdout);
+        scanf("%d", &RRquanta);
+    }
+}
 int main(int argc, char * argv[])
 {
     // handle SIGINT signal
@@ -56,22 +105,16 @@ int main(int argc, char * argv[])
         size++;
     }
     fclose(file);
+    // print the processes
+    printf("The processes are:\n");
+    for (int i = 0; i < size; i++){
+        printf("id: %d, arrival: %d, runtime: %d, priority: %d\n", processes[i]->id, processes[i]->arrival, processes[i]->runtime, processes[i]->priority);
+    }
+    fflush(stdout);
     //-------------------------------------------------------------------------------------
     // Ask the user for the chosen scheduling algorithm and its parameters, if there are any.
-    printf("Please enter the desired scheduling algorithm:\n");
-    printf("1. HPF\n2. SRTN\n3. RR\n");
-    fflush(stdout);
-    do {
-        scanf("%d", &selected_algo);
-        if (selected_algo < 1 || selected_algo > 3)
-            printf("Invalid input. Please enter a number between 1 and 3.\n");
-    } while (selected_algo < 1 || selected_algo > 3);
+    getAlgoFromUser();
 
-    if (selected_algo == 3){
-        printf("Please enter the desired time quanta:\n");
-        fflush(stdout);
-        scanf("%d", &RRquanta);
-    }
     //-------------------------------------------------------------------------------------
     // create a message queue for sending processes to the scheduler
     key_t key_id;
@@ -87,32 +130,9 @@ int main(int argc, char * argv[])
     fflush(stdout);
     //-------------------------------------------------------------------------------------
     // Initiate and create the scheduler and clock processes.
-    clk_pid = fork();
-    if(clk_pid < 0){
-        printf("Error while forking clk \n");
-        fflush(stdout);
-        exit(1);
-    }
 
-    if(clk_pid == 0){
-        execl("clk.out","clk.out",(char *)NULL);
-    }else{
-        scheduler_pid = fork();
-        if(scheduler_pid < 0){
-            printf("Error while forking scheduler \n");
-            fflush(stdout);
-            exit(1);
-        }
-        if(scheduler_pid == 0){
-            /*
-            char selectedAlgorithmChar[5];
-            sprintf(selectedAlgorithmChar, "%d", selected_algo);
-            execl("scheduler.out","scheduler.out",selectedAlgorithmChar,(char *)NULL);
-            */
-            // TODO: pass the selected algorithm and its parameters to the scheduler
-            //execl("scheduler.out","scheduler.out",(char *)NULL);
-        }
-    }
+    forkClkAndScheduler();
+
     //-------------------------------------------------------------------------------------
     // intialize the clock
     initClk();
@@ -122,20 +142,30 @@ int main(int argc, char * argv[])
 
     while(true){
         int current_time = getClk();
+
+
         if(next_process_index == size){
             break;
         }
+
         // this loop to handle the case of multiple processes arriving at the same time
         while (next_process_index < size){
             if(processes[next_process_index]->arrival == current_time){
+                // send the process to the scheduler
                 msgbuff msg;
                 msg.mtype = 1;
                 msg.proc = *processes[next_process_index];
-                send_val = msgsnd(msgq_id, &msg, sizeof(msg.proc), !IPC_NOWAIT);
+
+                send_val = msgsnd(msgq_id, &msg, sizeof(msg.proc), IPC_NOWAIT);
                 if (send_val == -1)
                 {
                     perror("Errror in send");
+                    exit(-1);
                 }
+                // print the process sent to the scheduler
+                printf("Process with id %d sent to the scheduler\n", processes[next_process_index]->id);
+                fflush(stdout);
+
                 next_process_index++;
             }else{
                 break;
@@ -152,6 +182,8 @@ int main(int argc, char * argv[])
     fflush(stdout);
     int temp_pid = wait(&stat_loc);
     // 5. Clear clock resources
+    printf("fuckkkkk Whyyyyyyy \n");
+    fflush(stdout);
     destroyClk(true);
 }
 

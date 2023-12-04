@@ -2,79 +2,91 @@
 
 #include "headers.h"
 
-struct ProcessQueue
-{
-    int size;
-    int capacity;
-    process **processes;
+struct ProcessQueue{
+    int size;       // actual used sized
+    int capacity;   // maximum size available for usage
+    process **array;
 } ProcessQueue;
 
-void initializeProcessQueue(int capacity){
-    if(!capacity || capacity<1) capacity = 200;
-    if(capacity<200) capacity = 200;
+void ProcessQueueInitialize(int inputSize) {
+
+    if(!inputSize || inputSize<1) inputSize = 200;
+    if(inputSize<200) inputSize = 200;
+
+    ProcessQueue.array = malloc(inputSize*sizeof(process));
     ProcessQueue.size = 0;
-    ProcessQueue.capacity = capacity;
-    ProcessQueue.processes = (process **)malloc(sizeof(process *) * capacity);
+    ProcessQueue.capacity = inputSize;
+
 }
 
-process insertProcess(process *proc){
-    if(ProcessQueue.size == ProcessQueue.capacity)
-    {
-        ProcessQueue.capacity *= 2;
-        ProcessQueue.processes = (process **)realloc(ProcessQueue.processes, sizeof(process *) * ProcessQueue.capacity);
+process* ProcessQueueInsert(process* p) {
+
+    if(ProcessQueue.size == ProcessQueue.capacity) {
+        ProcessQueue.capacity = ProcessQueue.capacity * 2;
+        ProcessQueue.array = realloc(ProcessQueue.array,ProcessQueue.capacity*sizeof(process));
     }
-    ProcessQueue.processes[ProcessQueue.size] = proc;
-    ProcessQueue.size++;
-    return *proc;
+    process* to_insert = (process*) malloc(sizeof(process));
+    *to_insert = *p;
+
+    ProcessQueue.array[ProcessQueue.size++] = to_insert;
+    return to_insert;
+
 }
 
-bool removeProcess(process *proc){
-    int i;
-    process *temp;
-    for(i=0; i<ProcessQueue.size; i++)
-    {
-        if(ProcessQueue.processes[i]->pid == proc->pid)
-        {
-            temp = ProcessQueue.processes[i];
-            ProcessQueue.processes[i] = ProcessQueue.processes[ProcessQueue.size-1];
+bool ProcessQueueRemove(process* p) {
+    int id = p->id;
+    process* remove = NULL;
+
+    for(int i=0;i<ProcessQueue.size;i++) {
+        if(ProcessQueue.array[i]->id == id) {
+            remove = ProcessQueue.array[i];
+            ProcessQueue.array[i] = ProcessQueue.array[ProcessQueue.size-1];
             ProcessQueue.size--;
-            free(temp);
-            return 1;
+            break;
         }
+    }
+    if(remove) {
+        free(remove);
+        return 1;
     }
     return 0;
 }
 
-void queueRefresh(){
-    int i;
-    for(i=0; i<ProcessQueue.size; i++)
-    {
-        if(ProcessQueue.processes[i]->status == 1 || ProcessQueue.processes[i]->status == 2) // started or resumed
-            ProcessQueue.processes[i]->remainingtime--;
+void ProcessQueueRefresh() {
 
-        else if(ProcessQueue.processes[i]->status == 3) // stopped
-            ProcessQueue.processes[i]->waitingtime++;
-
-        else if(ProcessQueue.processes[i]->status == 4) // finished
-            removeProcess(ProcessQueue.processes[i]);
-
+    for(int i=0;i<ProcessQueue.size;i++) {
+        if(ProcessQueue.array[i]->status == 1 || ProcessQueue.array[i]->status==2) { //running process
+            ProcessQueue.array[i]->remainingtime--;
+        }
+        else if(ProcessQueue.array[i]->status == 3) { //waiting process
+            ProcessQueue.array[i]->waitingtime++;
+        }
+        else if(ProcessQueue.array[i]->status == 4) {
+            ProcessQueueRemove(ProcessQueue.array[i]);
+        }
     }
+
 }
 
-process *getProcess(int id){
-    int i;
-    for(i=0; i<ProcessQueue.size; i++)
-    {
-        if(ProcessQueue.processes[i]->id == id)
-            return ProcessQueue.processes[i];
+process* ProcessQueueGetProcess(int id) {
+    process *p = NULL;
+    
+    for(int i=0;i<ProcessQueue.size;i++) {
+        if(ProcessQueue.array[i]->pid == id) {
+            p = ProcessQueue.array[i];
+            break;
+        }
     }
-    return NULL;
+
+    // if no process with such ID exists, NULL is returned (must check on NULL)
+    return p;
 }
 
-bool freeProcessQueue(){
-    int i;
-    for(i=0; i<ProcessQueue.size; i++)
-        free(ProcessQueue.processes[i]);
-    free(ProcessQueue.processes);
+bool ProcessQueueFree() {
+
+    for(int i=0;i<ProcessQueue.size;i++) free(ProcessQueue.array[i]);
+
+    free(ProcessQueue.array);
+
     return 1;
 }
