@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>      //if you don't use scanf/printf change this include
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -115,3 +117,4 @@ int selected_algo;
 int RRquanta = 2;
 process *curentProcess=NULL;
 scheduling_algo algo;
+#define MAX_PROCESSES 100
