@@ -3,43 +3,54 @@
 
 typedef struct priority_queue
 {
-    
     int size;
     int capacity;
     process **processes;
 } priority_queue;
 
 //// Priority Queue Functions ////
-int parent(int i){
-    return (i-1)/2;
+int parent(int i)
+{
+    return (i - 1) / 2;
 }
-int left(int i){
-    return 2*i+1;
+int left(int i)
+{
+    return 2 * i + 1;
 }
-int right(int i){
-    return 2*i+2;
-}
-
-void swap(process **p1, process **p2){
-    process *temp = *p1;
-    *p1 = *p2;
-    *p2 = temp;
+int right(int i)
+{
+    return 2 * i + 2;
 }
 
-bool HPF_compare(process *p1, process *p2){
-    if(p1->priority < p2->priority){
+void swap(process **x, process **y)
+{
+    process *temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+bool HPF_compare(process *p1, process *p2)
+{
+    if (p1->priority < p2->priority)
+    {
         return true;
     }
-    else if(p1->priority == p2->priority){
-        if(p1->arrival < p2->arrival){
+    else if (p1->priority == p2->priority)
+    {
+        if (p1->arrival < p2->arrival)
+        {
             return true;
         }
-        else if(p1->arrival == p2->arrival){
-            if(p1->runtime < p2->runtime){
+        else if (p1->arrival == p2->arrival)
+        {
+            if (p1->runtime < p2->runtime)
+            {
                 return true;
             }
-            else if(p1->runtime == p2->runtime){
-                if(p1->id < p2->id){
+            else if (p1->runtime == p2->runtime)
+            {
+                if (p1->id < p2->id)
+                {
                     return true;
                 }
             }
@@ -48,21 +59,28 @@ bool HPF_compare(process *p1, process *p2){
     return false;
 }
 
-
-bool SRTN_compare(process *p1, process *p2){
-    if(p1->runtime < p2->runtime){
+bool SRTN_compare(process *p1, process *p2)
+{
+    if (p1->runtime < p2->runtime)
+    {
         return true;
     }
-    else if(p1->runtime == p2->runtime){
-        if(p1->arrival < p2->arrival){
+    else if (p1->runtime == p2->runtime)
+    {
+        if (p1->arrival < p2->arrival)
+        {
             return true;
         }
-        else if(p1->arrival == p2->arrival){
-            if(p1->priority < p2->priority){
+        else if (p1->arrival == p2->arrival)
+        {
+            if (p1->priority < p2->priority)
+            {
                 return true;
             }
-            else if(p1->priority == p2->priority){
-                if(p1->id < p2->id){
+            else if (p1->priority == p2->priority)
+            {
+                if (p1->id < p2->id)
+                {
                     return true;
                 }
             }
@@ -71,19 +89,25 @@ bool SRTN_compare(process *p1, process *p2){
     return false;
 }
 
-bool compare(process *p1, process *p2 ){
+bool compare(process *p1, process *p2)
+{
 
-    if( selected_algo ==1){
-        return HPF_compare(p1,p2);
-    }else if(selected_algo ==2){
-        return SRTN_compare(p1,p2);
+    if (selected_algo == 1)
+    {
+        return HPF_compare(p1, p2);
+    }
+    else if (selected_algo == 2)
+    {
+        return SRTN_compare(p1, p2);
     }
 
     return false; // should never reach here
 }
 
-void printQueue(priority_queue *q){
-    for(int i=0; i<q->size; i++){
+void printQueue(priority_queue *q)
+{
+    for (int i = 0; i < q->size; i++)
+    {
         printf("%d ", q->processes[i]->id);
         fflush(stdout);
     }
@@ -91,28 +115,28 @@ void printQueue(priority_queue *q){
     fflush(stdout);
 }
 
-bool createQueue(priority_queue *q, int capacity){
-    if(!q) return 0;
-    if(!capacity) capacity=50;
-    q = (priority_queue *)malloc(sizeof(priority_queue));
-    q->size = 0;
-    q->capacity = capacity;
-
-    q->processes = (process **)malloc(capacity * sizeof(process *)); // array of pointers to processes may produce errors
-    if(q->processes == NULL){
+bool createQueue(priority_queue *all_process, int capacity)
+{
+    if (!all_process)
         return 0;
-    }
+    if (!capacity)
+        capacity = 50;
+
+    all_process->size = 0;
+    all_process->capacity = capacity;
+    all_process->processes = (process **)calloc(all_process->capacity, sizeof(process *)); // initialize to zero
     return 1;
 }
 
-process *getpeek(priority_queue *q){
-    if(q->size == 0){
+process *getQueuePeek(priority_queue *all_process)
+{
+    if (all_process->size == 0)
         return NULL;
-    }
-    return q->processes[0];
+    return all_process->processes[0];
 }
 
-void reheapDown(priority_queue *all_process, int i){
+void reheapDown(priority_queue *all_process, int i)
+{
     int *size = &all_process->size;
     bool left_ok = left(i) < *size && compare(all_process->processes[left(i)], all_process->processes[i]);
     bool right_ok = right(i) < *size && compare(all_process->processes[right(i)], all_process->processes[i]);
@@ -142,69 +166,72 @@ void reheapDown(priority_queue *all_process, int i){
             swap(&all_process->processes[i], &all_process->processes[right(i)]);
             i = right(i);
         }
+
         left_ok = left(i) < *size && compare(all_process->processes[left(i)], all_process->processes[i]);
         right_ok = right(i) < *size && compare(all_process->processes[right(i)], all_process->processes[i]);
     }
-   
-    
 }
 
-void reheapUp(priority_queue *all_process, int i){
+void reheapUp(priority_queue *all_process)
+{
     int *size = &all_process->size;
-    while (i > 0 && compare(all_process->processes[i], all_process->processes[parent(i)]))
+
+    int i = *size - 1;
+    while (i != 0 && compare(all_process->processes[i], all_process->processes[parent(i)]))
     {
         swap(&all_process->processes[i], &all_process->processes[parent(i)]);
         i = parent(i);
     }
 }
 
-process *dequeue(priority_queue *all_process){
-    if(!all_process || all_process->size == 0)
+process *pQueueDequeue(priority_queue *all_process)
+{
+    if (!all_process || !all_process->processes)
         return NULL;
-    
-    // potiential error
-    process *p = all_process->processes[0];
-    all_process->processes[0] = all_process->processes[all_process->size - 1];
-    all_process->size--;
+    int *size = &all_process->size;
+    (*size--);
+    process *removed = all_process->processes[0];
+    all_process->processes[0] = all_process->processes[*size];
+    // reheap down
     reheapDown(all_process, 0);
-    return p;
+    return removed;
 }
 
-bool enqueue(priority_queue *all_process, process *p){
-    if(!all_process || !p)
+bool pQueueEnqueue(priority_queue *all_process, process *p)
+{
+    if (all_process->capacity == all_process->size)
         return 0;
-    if(all_process->size == all_process->capacity){
-        return 0;
-    }
-    all_process->processes[all_process->size] = p;
-    all_process->size++;
-    reheapUp(all_process, all_process->size - 1);
+    int *size = &all_process->size;
+    all_process->processes[*size] = p;
+    (*size)++;
+    // reheap up
+    reheapUp(all_process);
     return 1;
 }
 
-bool removeProcess(priority_queue *all_process, process *p){
-    if(!all_process || !p)
-        return 0;
-
+bool pQueueRemove(priority_queue *all_process, process *p)
+{
     int i;
+    int *size = &all_process->size;
 
-    for(i=0; i<all_process->size; i++){
-        if(all_process->processes[i] == p){
-            swap(&all_process->processes[i], &all_process->processes[all_process->size - 1]);
-            all_process->size--;
+    for (i = 0; i < *size; i++)
+    {
+        if (all_process->processes[i] == p)
+        {
+            swap(&all_process->processes[i], &all_process->processes[*size - 1]);
+            (*size)--;
             reheapDown(all_process, i);
-            
+            // break;
             return 1;
         }
     }
-
     return 0;
-
 }
 
-bool freeQueue(priority_queue *q){
-    if(!q) return 0;
-    free(q->processes);
-    free(q);
+bool freeQueue(priority_queue *all_process)
+{
+    if (!all_process || !all_process->processes)
+        return 0;
+    free(all_process->processes);
     return 1;
 }
