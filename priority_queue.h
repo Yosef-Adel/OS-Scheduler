@@ -63,30 +63,30 @@ bool SRTN_compare(process *p1, process *p2)
 {
     if (p1->runtime < p2->runtime)
     {
-        return true;
+        return false;
     }
     else if (p1->runtime == p2->runtime)
     {
         if (p1->arrival < p2->arrival)
         {
-            return true;
+            return false;
         }
         else if (p1->arrival == p2->arrival)
         {
             if (p1->priority < p2->priority)
             {
-                return true;
+                return false;
             }
             else if (p1->priority == p2->priority)
             {
                 if (p1->id < p2->id)
                 {
-                    return true;
+                    return false;
                 }
             }
         }
     }
-    return false;
+    return true;
 }
 
 bool compare(process *p1, process *p2)
@@ -98,10 +98,16 @@ bool compare(process *p1, process *p2)
     }
     else if (selected_algo == 2)
     {
-        return SRTN_compare(p1, p2);
+        return !SRTN_compare(p1, p2);
     }
 
     return false; // should never reach here
+
+    // if (p1->priority < p2->priority)
+    // {
+    //     return true;
+    // }
+    // return false;
 }
 
 void printQueue(priority_queue *q)

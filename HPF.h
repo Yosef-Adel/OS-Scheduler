@@ -9,11 +9,6 @@ process *HPFgetNextProcess(void *type);
 bool HPFremoveProcess(void *type, process *p);
 bool HPFfree(void *type);
 
-void HPFcast(void *type)
-{
-    // queue = (priQ *) type;
-}
-
 bool HPFInitialize(scheduling_algo *current_algorithm)
 {
     if (!current_algorithm)
@@ -50,9 +45,8 @@ process *HPFgetNextProcess(void *type)
 
 bool HPFpreempt(void *type)
 { // take care of the process that is currently running
-    if (curentProcess == NULL)
-        return true;
-    return false;
+
+    return (curentProcess == NULL) || (curentProcess->status == 3) || (curentProcess->status == 4);
 }
 
 bool HPFremoveProcess(void *type, process *p)

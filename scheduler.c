@@ -213,7 +213,7 @@ bool schedulerInitialize(int algo_num, int *msgq_id)
     // STRN
     else if (algo_num == 2)
     {
-        //
+        STRNInitialize(&algo);
     }
     // RR
     else if (algo_num == 3)
@@ -250,7 +250,9 @@ bool getMessage(int msgq_id, msgbuff *message)
 int main(int argc, char *argv[])
 {
     int algo = atoi(argv[1]);
+    selected_algo = algo;
     int msgq_id;
+
     schedulerInitialize(algo, &msgq_id);
     msgbuff msgq_buffer;
     int now, previous_time = -1;
