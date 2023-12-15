@@ -43,22 +43,30 @@ void CreateProcess(msgbuff *msg_buffer)
 
 void schedulerIsDead(int SIGNUM)
 {
-    printf("schedulerIsDead \n");
     // closing the opened file
     fclose(outputStats);
-    printf("schedulerIsDead \n");
-    fflush(stdout);
 
     // Calculating the utilization stats
     outputStats = fopen("schedulerPerf.perf", "w");
     printf("schedulerIsDead%d \n", idleTime);
     fflush(stdout);
+
     double utilization = 1 - ((double)idleTime / finishTime); // calculates the utilization percentage
     double avgWaitingTime = (double)waitingTime / numProc;
+
+    // calculating the standard deviation
+    double sum = 0;
+    for (int i = 0; i < numProc; i++)
+    {
+        sum += pow(waitingTimeArray[i] - avgWaitingTime, 2);
+    }
+    double stdDev = sqrt(sum / numProc);
+
     // Printing the utilization stats in another file
     fprintf(outputStats, "CPU utilization = %.2f%%\n", utilization * 100);
     fprintf(outputStats, "Avg WTA = %.2f\n", avgWTA);
     fprintf(outputStats, "Avg Waiting = %.2f\n", avgWaitingTime);
+    fprintf(outputStats, "Std WTA = %.2f\n", stdDev);
     fflush(outputStats);
     fclose(outputStats);
 
@@ -95,6 +103,9 @@ void childIsDead(int SIGNUM)
     // by the avgWTA. Then we add the new WTA, and divide by the total number of processes.
     waitingTime += proc->waitingtime;
     previousTimeUsage = getClk(); // updating the utilization time
+    // add the waiting time to the array int *waitingTimeArray;
+    waitingTimeArray[proc->id] = proc->waitingtime;
+
     if (proc->remainingtime < 0)
         proc->remainingtime = 0;
     // Printing process info

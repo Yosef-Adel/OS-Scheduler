@@ -1,6 +1,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include <math.h>
 #include "headers.h"
 #include "ProcessQueue.h"
 #include "RR.h"
@@ -14,6 +15,8 @@ int finishTime = 0;    // Time when the last process finished, initially = 0
 int waitingTime = 0; // waiting time of processes, initially = 0
 int numProc = 0;     // number of processes, initially = 0
 double avgWTA = 0;   // average weighted turnaround time, initially = 0
+// create array to store the waiting time of each process of size 200
+int waitingTimeArray[MAX_PROCESSES];
 
 scheduling_algo algo;
 FILE *outputStats;    // File pointer to the output file, where stats will be written
