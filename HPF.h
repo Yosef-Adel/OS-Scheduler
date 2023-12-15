@@ -15,6 +15,7 @@ bool HPFInitialize(scheduling_algo *current_algorithm)
         return 0;
 
     priority_queue *HPFqueue = (priority_queue *)malloc(sizeof(priority_queue));
+
     createQueue(HPFqueue, 50);
 
     *current_algorithm = (scheduling_algo){

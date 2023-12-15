@@ -110,4 +110,4 @@ int RRquanta = 2;
 process *curentProcess = NULL;
 scheduling_algo algo;
 
-#define MAX_PROCESSES 100
+#define MAX_PROCESSES 200

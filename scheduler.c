@@ -1,18 +1,5 @@
 #include "scheduler.h"
 
-void getQuantumSize()
-{
-    printf("Please enter quantum size: \n");
-    fflush(stdout);
-    scanf("%d", &RRquanta);
-    if (RRquanta < 1)
-    {
-        printf("Invalid input entered. Taking default value of 2 instead.\n");
-        fflush(stdout);
-        RRquanta = 2;
-    }
-}
-
 void schedulerIsForContextSwitch()
 {
     // Test implementation for schedulerIsForContextSwitch
@@ -54,17 +41,17 @@ void CreateProcess(msgbuff *msg_buffer)
     }
 }
 
-void schedulerAreDead(int SIGNUM)
+void schedulerIsDead(int SIGNUM)
 {
-    printf("schedulerAreDead \n");
+    printf("schedulerIsDead \n");
     // closing the opened file
     fclose(outputStats);
-    printf("schedulerAreDead \n");
+    printf("schedulerIsDead \n");
     fflush(stdout);
 
     // Calculating the utilization stats
     outputStats = fopen("schedulerPerf.perf", "w");
-    printf("schedulerAreDead%d \n", idleTime);
+    printf("schedulerIsDead%d \n", idleTime);
     fflush(stdout);
     double utilization = 1 - ((double)idleTime / finishTime); // calculates the utilization percentage
     double avgWaitingTime = (double)waitingTime / numProc;
@@ -83,12 +70,12 @@ void schedulerAreDead(int SIGNUM)
     int msgq_id = msgget(key_id, 0666 | IPC_CREAT);
     msgctl(msgq_id, IPC_RMID, (struct msqid_ds *)0);
     // Installing the signal handler again to trap SIGINT again
-    signal(SIGINT, schedulerAreDead);
+    signal(SIGINT, schedulerIsDead);
 }
 
-void childAreDead(int SIGNUM)
+void childIsDead(int SIGNUM)
 {
-    // Test implementation for childAreDead
+    // Test implementation for childIsDead
     // TODOt code here
 
     int procStatus;
@@ -189,11 +176,13 @@ bool schedulerInitialize(int algo_num, int *msgq_id)
     fprintf(outputStats, "#At time x process y state arr w total z remain y wait k\n");
     fflush(outputStats);
     /* sigaction to handle SIGCHLD signal
-    whenever a process dies, it calls childAreDead
+    whenever a process dies, it calls childIsDead
     (sigaction since SIGCHLD cannot be handled directly)
     */
+    // TODO add the stack overflow link
+
     struct sigaction chld_handle;
-    chld_handle.sa_handler = childAreDead;
+    chld_handle.sa_handler = childIsDead;
     sigemptyset(&chld_handle.sa_mask);
     chld_handle.sa_flags = SA_NOCLDSTOP;
     if (sigaction(SIGCHLD, &chld_handle, NULL) == -1)
@@ -201,7 +190,9 @@ bool schedulerInitialize(int algo_num, int *msgq_id)
         perror("sigaction");
         exit(1);
     }
-    signal(SIGINT, schedulerAreDead);
+
+    signal(SIGINT, schedulerIsDead);
+
     initClk();
     previousTimeUsage = 0;
     // Calling the initializer of each algorithm
@@ -218,9 +209,11 @@ bool schedulerInitialize(int algo_num, int *msgq_id)
     // RR
     else if (algo_num == 3)
     {
-        ///
+        RRInitialize(&algo);
     }
+
     ProcessQueueInitialize(200);
+
     // Creating the message queue
     key_t key_id = ftok("keyfile", 65);
     int msgq_idTemp = msgget(key_id, 0666 | IPC_CREAT);
@@ -250,12 +243,19 @@ bool getMessage(int msgq_id, msgbuff *message)
 int main(int argc, char *argv[])
 {
     int algo = atoi(argv[1]);
+    // TODO if the selcted algo is 3 then get the quanta from the second argument
+    if (algo == 3)
+    {
+        RRquanta = atoi(argv[2]);
+    }
     selected_algo = algo;
     int msgq_id;
 
     schedulerInitialize(algo, &msgq_id);
+
     msgbuff msgq_buffer;
     int now, previous_time = -1;
+
     printf("msgq_id= %d\n", msgq_id);
     fflush(stdout);
     while (1)
@@ -264,6 +264,7 @@ int main(int argc, char *argv[])
         if (getMessage(msgq_id, &msgq_buffer))
         {
             CreateProcess(&msgq_buffer);
+
             while (getMessage(msgq_id, &msgq_buffer))
             {
                 CreateProcess(&msgq_buffer);
@@ -272,7 +273,9 @@ int main(int argc, char *argv[])
             {
                 ProcessQueueRefresh();
             }
+
             schedulerIsForContextSwitch();
+
             if (now > previous_time)
             {
                 previous_time = now;

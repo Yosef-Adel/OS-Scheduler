@@ -1,70 +1,84 @@
 #include "headers.h"
 
-
 int clk_pid;
 int scheduler_pid;
 int stat_loc;
 
 void clearResources(int);
 
-void forkClkAndScheduler(){
+void forkClkAndScheduler()
+{
     clk_pid = fork();
-    if(clk_pid < 0){
+    if (clk_pid < 0)
+    {
         printf("Error while forking clk \n");
         fflush(stdout);
         exit(1);
     }
 
-    if(clk_pid == 0){
-        execl("clk.out","clk.out",(char *)NULL);
-    }else{
+    if (clk_pid == 0)
+    {
+        execl("clk.out", "clk.out", (char *)NULL);
+    }
+    else
+    {
         scheduler_pid = fork();
-        if(scheduler_pid < 0){
+        if (scheduler_pid < 0)
+        {
             printf("Error while forking scheduler \n");
             fflush(stdout);
             exit(1);
         }
-        if(scheduler_pid == 0){
-            /*
-            char selectedAlgorithmChar[5];
-            sprintf(selectedAlgorithmChar, "%d", selected_algo);
-            execl("scheduler.out","scheduler.out",selectedAlgorithmChar,(char *)NULL);
-            */
-            // TODO: pass the selected algorithm and its parameters to the scheduler
-            //execl("scheduler.out","scheduler.out",(char *)NULL);
-            char selectedAlgorithmChar[5];
-            sprintf(selectedAlgorithmChar, "%d", selected_algo);
-            execl("scheduler.out","scheduler.out",selectedAlgorithmChar,(char *)NULL);
+        if (scheduler_pid == 0)
+        {
 
+            // TODO:  Path the quanta of the RR algorithm to the scheduler
+
+            char selectedAlgorithmChar[5];
+            sprintf(selectedAlgorithmChar, "%d", selected_algo);
+            if (selected_algo == 3)
+            {
+                char RRquantaChar[5];
+                sprintf(RRquantaChar, "%d", RRquanta);
+                execl("scheduler.out", "scheduler.out", selectedAlgorithmChar, RRquantaChar, (char *)NULL);
+            }
+            else
+            {
+                execl("scheduler.out", "scheduler.out", selectedAlgorithmChar, (char *)NULL);
+            }
         }
     }
 }
 
-
-void getAlgoFromUser(){
+void getAlgoFromUser()
+{
     printf("Please enter the desired scheduling algorithm:\n");
     printf("1. HPF\n2. SRTN\n3. RR\n");
     fflush(stdout);
-    do {
+    do
+    {
         scanf("%d", &selected_algo);
         if (selected_algo < 1 || selected_algo > 3)
             printf("Invalid input. Please enter a number between 1 and 3.\n");
     } while (selected_algo < 1 || selected_algo > 3);
 
-    if (selected_algo == 3){
-        printf("Please enter the desired time quanta:\n");
+    if (selected_algo == 3)
+    {
+        printf("Please enter the desired quanta:\n");
         fflush(stdout);
         scanf("%d", &RRquanta);
     }
 }
-int main(int argc, char * argv[])
+
+int main(int argc, char *argv[])
 {
     // handle SIGINT signal
     signal(SIGINT, clearResources);
     //-------------------------------------------------------------------------------------
-    // Read the input files.
+    // Read the input file.
     FILE *file = fopen("processes.txt", "r");
-    if (file == NULL){
+    if (file == NULL)
+    {
         printf("Error opening file!\n");
         exit(1);
     }
@@ -76,10 +90,11 @@ int main(int argc, char * argv[])
     process *processes[MAX_PROCESSES];
 
     // read the processes from the file and store them in the processes array
-    int temp_id, temp_arrival, temp_runtime, temp_priority; 
+    int temp_id, temp_arrival, temp_runtime, temp_priority;
     int size = 0;
 
-    while ( fscanf(file, "%d %d %d %d", &temp_id, &temp_arrival, &temp_runtime, &temp_priority) != EOF){
+    while (fscanf(file, "%d %d %d %d", &temp_id, &temp_arrival, &temp_runtime, &temp_priority) != EOF)
+    {
         // Allocate memory for the current process
         process *new_process = (process *)malloc(sizeof(process));
 
@@ -107,7 +122,8 @@ int main(int argc, char * argv[])
     fclose(file);
     // print the processes
     printf("The processes are:\n");
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++)
+    {
         printf("id: %d, arrival: %d, runtime: %d, priority: %d\n", processes[i]->id, processes[i]->arrival, processes[i]->runtime, processes[i]->priority);
     }
     fflush(stdout);
@@ -140,17 +156,20 @@ int main(int argc, char * argv[])
     // Main Loop
     int next_process_index = 0;
 
-    while(true){
+    while (true)
+    {
         int current_time = getClk();
 
-
-        if(next_process_index == size){
+        if (next_process_index == size)
+        {
             break;
         }
 
         // this loop to handle the case of multiple processes arriving at the same time
-        while (next_process_index < size){
-            if(processes[next_process_index]->arrival == current_time){
+        while (next_process_index < size)
+        {
+            if (processes[next_process_index]->arrival == current_time)
+            {
                 // send the process to the scheduler
                 msgbuff msg;
                 msg.mtype = 1;
@@ -167,14 +186,15 @@ int main(int argc, char * argv[])
                 fflush(stdout);
 
                 next_process_index++;
-            }else{
+            }
+            else
+            {
                 break;
             }
         }
 
         printf("current time is %d\n", current_time);
         sleep(1);
-        
     }
     //-------------------------------------------------------------------------------------
 
@@ -182,15 +202,15 @@ int main(int argc, char * argv[])
     fflush(stdout);
     int temp_pid = wait(&stat_loc);
     // 5. Clear clock resources
-    printf("fuckkkkk Whyyyyyyy \n");
-    fflush(stdout);
+    // printf("fuckkkkk Whyyyyyyy \n");
+    // fflush(stdout);
     destroyClk(true);
 }
 
 void clearResources(int signum)
 {
-    //TODO Clears all resources in case of interruption
-    //TODO ask abdelkhalik about if i need to kill the scheduler and clk and free the processes
+    // TODO Clears all resources in case of interruption
+    // TODO ask abdelkhalik about if i need to kill the scheduler and clk and free the processes
     destroyClk(true);
     key_t key_id;
 

@@ -20,12 +20,12 @@ FILE *outputStats;    // File pointer to the output file, where stats will be wr
 FILE *memOutputStats; // File pointer to the memory output file, where stats will be written
 
 void schedulerIsForContextSwitch();
-void schedulerAreDead(int SIGNUM);
+void schedulerIsDead(int SIGNUM);
 void schedulerPreempt(process *proc);
 void schedulerResume(process *proc);
-void childAreDead(int SIGNUM);
+void childIsDead(int SIGNUM);
 bool schedulerInitialize(int algo_num, int *msgq_id);
 bool getMessage(int msgq_id, msgbuff *message);
 void CreateProcess(msgbuff *msg_buffer);
-void getQuantumSize();
+
 #endif

@@ -102,12 +102,6 @@ bool compare(process *p1, process *p2)
     }
 
     return false; // should never reach here
-
-    // if (p1->priority < p2->priority)
-    // {
-    //     return true;
-    // }
-    // return false;
 }
 
 void printQueue(priority_queue *q)
