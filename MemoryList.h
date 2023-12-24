@@ -2,14 +2,15 @@
 #include <math.h>
 #include <stdio.h>
 struct node {
-  int addresss;
-  struct node *next;
+  int addresss; // address of the node
+  struct node *next; // pointer to the next node
 };
 
+// Definition of a memory list structure
 typedef struct {
-  int index;
-  struct node *head;
-  struct node *tail;
+  int index;          // Index of the memory list
+  struct node *head;  // Pointer to the head of the list
+  struct node *tail;  // Pointer to the tail of the list
 } memList;
 
 // function def
@@ -20,6 +21,16 @@ int getminadderess(memList *memlist);
 
 // function imp
 
+/**
+
+ * This function creates a new node with the given address and adds it to the memory list.
+ * If the memory list is empty, the new node becomes the head and tail of the list.
+ * Otherwise, the new node is appended to the tail of the list.
+ * After adding the hole, the memory list is sorted.
+ * 
+ * @param mlist Pointer to the memory list.
+ * @param addresss The address of the hole to be added.
+ */
 void addHole(memList *mlist, int addresss) {
   struct node *newNode = (struct node *)malloc(sizeof(struct node));
 
@@ -37,6 +48,14 @@ void addHole(memList *mlist, int addresss) {
   sortHoles(mlist);
 }
 
+/**
+ * Deletes a hole from the memory list based on the given address.
+ * If the hole with the specified address is found, it is removed from the list.
+ * The memory list is then sorted after the deletion.
+ *
+ * @param mlist The memory list.
+ * @param addresss The address of the hole to be deleted.
+ */
 void deleteHole(memList *mlist, int addresss) {
 
   struct node *temp = mlist->head;
@@ -61,6 +80,16 @@ void deleteHole(memList *mlist, int addresss) {
   sortHoles(mlist);
 }
 
+
+/**
+ * This function returns the minimum address in the memory list.
+ * It iterates through the list and compares each address with the current minimum.
+ * If a smaller address is found, it updates the minimum.
+ * If the list is empty, it returns -1.
+ * 
+ * @param mlist Pointer to the memory list.
+ * @return The minimum address in the memory list, or -1 if the list is empty.
+ */
 int getminadderess(memList *mlist) {
 
   int min = INT_MAX;
