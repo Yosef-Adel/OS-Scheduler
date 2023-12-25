@@ -67,4 +67,22 @@ int alocateMemory(memList *free_list, int memSize)
   return addr;
 }
 
+void deAllocateMemory(memList *free_list, int memStart, int memSize) 
+{
 
+  int list_index = ceil(log2(memSize));
+  addHole(&free_list[list_index], memStart);
+
+  int join_addr;
+  int i = list_index;
+
+  while (true) {
+    join_addr = compactList(&free_list[i]);
+
+    if (join_addr != -1) {
+      addHole(&free_list[i + 1], join_addr);
+    } else {
+      break;
+    }
+  }
+}
