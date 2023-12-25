@@ -1,16 +1,17 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include <math.h>
-#include "headers.h"
+#include "HPF.h"
 #include "ProcessQueue.h"
 #include "RR.h"
 #include "SRTN.h"
-#include "HPF.h"
-
+#include "headers.h"
+#include "memoryManager.h"
+#include <math.h>
 int previousTimeUsage; // Time when we last utilized the CPU
 int idleTime = 0;      // Time CPU was idle in, initially = 0
 int finishTime = 0;    // Time when the last process finished, initially = 0
+memList free_list[11];
 
 int waitingTime = 0; // waiting time of processes, initially = 0
 int numProc = 0;     // number of processes, initially = 0
@@ -19,8 +20,10 @@ double avgWTA = 0;   // average weighted turnaround time, initially = 0
 int waitingTimeArray[MAX_PROCESSES];
 
 scheduling_algo algo;
-FILE *outputStats;    // File pointer to the output file, where stats will be written
-FILE *memOutputStats; // File pointer to the memory output file, where stats will be written
+FILE *
+    outputStats; // File pointer to the output file, where stats will be written
+FILE *memoryState; // File pointer to the memory output file, where stats
+                      // will be written
 
 void schedulerIsForContextSwitch();
 void schedulerIsDead(int SIGNUM);
