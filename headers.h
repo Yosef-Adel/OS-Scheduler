@@ -70,6 +70,8 @@ typedef struct
     int arrival;
     int runtime;
     int priority;
+    int memSize;
+    int memStart;
     //======================
     // these vars will help you in further calculations
     int pid;
